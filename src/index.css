@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-cloud text-ink font-body antialiased transition-colors duration-300;
+  }
+
+  html.dark body {
+    @apply bg-ink text-cloud;
+  }
+
+  /* Keep focus visible for keyboard users without an ugly default ring */
+  button:focus-visible {
+    outline: 3px solid #6c5ce7;
+    outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  .text-stroke {
+    -webkit-text-stroke: 1.5px #1b1730;
+  }
+}
+
+/* Respect users who'd rather not see motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
