@@ -64,7 +64,7 @@ export default function QuestionCard({
     const btnH = fleeingButtonRef.current?.offsetHeight || FALLBACK_BUTTON_SIZE.height;
 
     const centerY = rect.height / 2 - btnH / 2;
-    const gap = 28;
+    const gap = 56; // wider gap so buttons never touch
     const leftX = rect.width / 2 - btnW - gap / 2;
     const rightX = rect.width / 2 + gap / 2;
 
