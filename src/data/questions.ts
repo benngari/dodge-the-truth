@@ -24,6 +24,8 @@ export interface Question {
   wrongResponse: string;
   /** Shown on the rare occasion the player actually catches the correct answer. */
   catchResponse: string;
+  /** When true, BOTH buttons dodge the cursor — pure chaos mode. */
+  isTrickQuestion?: boolean;
 }
 
 export const QUESTIONS: Question[] = [
@@ -75,6 +77,7 @@ export const QUESTIONS: Question[] = [
     correctAnswer: "no",
     wrongResponse: "Good. Keep believing in the sky. It's load-bearing.",
     catchResponse: "Reality.exe has stopped responding.",
+    isTrickQuestion: true,
   },
   {
     id: 8,
@@ -145,6 +148,7 @@ export const QUESTIONS: Question[] = [
     correctAnswer: "no",
     wrongResponse: "Smart. Nobody truly wants to fight the horse-sized duck.",
     catchResponse: "You've sided with the duck. We respect the chaos.",
+    isTrickQuestion: true,
   },
   {
     id: 18,

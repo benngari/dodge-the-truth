@@ -94,7 +94,33 @@ export default function QuestionCard({
     return () => window.removeEventListener("resize", handleResize);
   }, [layoutInitialPositions]);
 
-  /** Find a new spot for the runaway button, away from the cursor and the other button. */
+  /** Find a new spot for a button, away from the cursor and (optionally) the other button. */
+  const findEscapeSpot = useCallback(
+    (cursor: Point, avoid: Point, btnW: number, btnH: number, rect: DOMRect): Point => {
+      const maxX = Math.max(ARENA_PADDING, rect.width - btnW - ARENA_PADDING);
+      const maxY = Math.max(ARENA_PADDING, rect.height - btnH - ARENA_PADDING);
+
+      let best: Point = { x: ARENA_PADDING, y: ARENA_PADDING };
+      let bestScore = -Infinity;
+
+      for (let i = 0; i < 10; i++) {
+        const candidate: Point = {
+          x: ARENA_PADDING + Math.random() * (maxX - ARENA_PADDING),
+          y: ARENA_PADDING + Math.random() * (maxY - ARENA_PADDING),
+        };
+        const candidateCenter: Point = { x: candidate.x + btnW / 2, y: candidate.y + btnH / 2 };
+        const score = distance(candidateCenter, cursor) + distance(candidateCenter, avoid) * 0.5;
+        if (score > bestScore) {
+          bestScore = score;
+          best = candidate;
+        }
+      }
+      return best;
+    },
+    []
+  );
+
+  /** Move the runaway button (and, on trick questions, BOTH buttons) away from the cursor. */
   const dodgeTo = useCallback(
     (cursor: Point) => {
       const arena = arenaRef.current;
@@ -107,41 +133,35 @@ export default function QuestionCard({
       const btnW = fleeingButtonRef.current?.offsetWidth || FALLBACK_BUTTON_SIZE.width;
       const btnH = fleeingButtonRef.current?.offsetHeight || FALLBACK_BUTTON_SIZE.height;
 
-      const maxX = Math.max(ARENA_PADDING, rect.width - btnW - ARENA_PADDING);
-      const maxY = Math.max(ARENA_PADDING, rect.height - btnH - ARENA_PADDING);
-
-      const staticCenter: Point = {
-        x: positions[staticAnswer].x + btnW / 2,
-        y: positions[staticAnswer].y + btnH / 2,
-      };
-
-      let best: Point | null = null;
-      let bestScore = -Infinity;
-
-      // Try a handful of random candidates, keep the one furthest from
-      // both the cursor and the static button (cheap, good-enough search).
-      for (let i = 0; i < 10; i++) {
-        const candidate: Point = {
-          x: ARENA_PADDING + Math.random() * (maxX - ARENA_PADDING),
-          y: ARENA_PADDING + Math.random() * (maxY - ARENA_PADDING),
-        };
-        const candidateCenter: Point = { x: candidate.x + btnW / 2, y: candidate.y + btnH / 2 };
-        const score = distance(candidateCenter, cursor) + distance(candidateCenter, staticCenter) * 0.5;
-        if (score > bestScore) {
-          bestScore = score;
-          best = candidate;
-        }
-      }
-
-      if (!best) return;
-
       lastDodgeAt.current = now;
       setIsFleeing(true);
       if (soundEnabled) playDodgeSound();
-      setPositions((prev) => ({ ...prev, [fleeingAnswer]: best as Point }));
+
+      if (question.isTrickQuestion) {
+        // Chaos mode: both buttons bolt, each avoiding the cursor and each other.
+        const fleeingCenter: Point = {
+          x: positions[fleeingAnswer].x + btnW / 2,
+          y: positions[fleeingAnswer].y + btnH / 2,
+        };
+        const staticCenter: Point = {
+          x: positions[staticAnswer].x + btnW / 2,
+          y: positions[staticAnswer].y + btnH / 2,
+        };
+        const newFleeing = findEscapeSpot(cursor, staticCenter, btnW, btnH, rect);
+        const newStatic = findEscapeSpot(cursor, fleeingCenter, btnW, btnH, rect);
+        setPositions({ [fleeingAnswer]: newFleeing, [staticAnswer]: newStatic } as Record<AnswerValue, Point>);
+      } else {
+        const staticCenter: Point = {
+          x: positions[staticAnswer].x + btnW / 2,
+          y: positions[staticAnswer].y + btnH / 2,
+        };
+        const newSpot = findEscapeSpot(cursor, staticCenter, btnW, btnH, rect);
+        setPositions((prev) => ({ ...prev, [fleeingAnswer]: newSpot }));
+      }
+
       window.setTimeout(() => setIsFleeing(false), 400);
     },
-    [fleeingAnswer, staticAnswer, positions, locked, soundEnabled]
+    [fleeingAnswer, staticAnswer, positions, locked, soundEnabled, question.isTrickQuestion, findEscapeSpot]
   );
 
   /** Mouse / pen / touch-drag tracking across the whole arena. */
@@ -220,7 +240,7 @@ export default function QuestionCard({
           variant="yes"
           x={positions.yes.x}
           y={positions.yes.y}
-          isFleeing={isFleeing && fleeingAnswer === "yes"}
+          isFleeing={isFleeing}
           disabled={locked}
           onClick={() => resolveAnswer("yes")}
           ref={fleeingAnswer === "yes" ? fleeingButtonRef : undefined}
@@ -230,7 +250,7 @@ export default function QuestionCard({
           variant="no"
           x={positions.no.x}
           y={positions.no.y}
-          isFleeing={isFleeing && fleeingAnswer === "no"}
+          isFleeing={isFleeing}
           disabled={locked}
           onClick={() => resolveAnswer("no")}
           ref={fleeingAnswer === "no" ? fleeingButtonRef : undefined}
@@ -257,7 +277,9 @@ export default function QuestionCard({
       </div>
 
       <p className="mt-3 text-center font-body text-xs text-ink/50 dark:text-cloud/50">
-        Tip: one of these buttons really, really doesn't want to be clicked.
+        {question.isTrickQuestion
+          ? "⚠️ Chaos mode: BOTH buttons are running from you."
+          : "Tip: one of these buttons really, really doesn't want to be clicked."}
       </p>
     </div>
   );
