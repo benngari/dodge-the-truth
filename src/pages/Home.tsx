@@ -84,12 +84,39 @@ export default function Home({ darkMode, onToggleDarkMode }: HomeProps) {
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-10">
-      {/* Ambient floating blobs — purely decorative background atmosphere */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-20 -top-20 h-72 w-72 animate-blob rounded-full bg-grape/30 blur-3xl dark:bg-grape/20" />
-        <div className="absolute -right-16 top-10 h-72 w-72 animate-blob rounded-full bg-punch/30 blur-3xl [animation-delay:3s] dark:bg-punch/20" />
-        <div className="absolute bottom-0 left-1/3 h-72 w-72 animate-blob rounded-full bg-zest/30 blur-3xl [animation-delay:6s] dark:bg-zest/20" />
-      </div>
+      {/* Background: flat base + faint grid + grain for texture, no gradient blobs */}
+      <div className="pointer-events-none absolute inset-0 bg-cloud dark:bg-ink" />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.06] dark:opacity-[0.09]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+          backgroundSize: "44px 44px",
+          color: "#6C5CE7",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute -left-32 -top-40 h-[28rem] w-[28rem] rounded-full opacity-40 blur-[110px] dark:opacity-30"
+        style={{ background: "radial-gradient(circle, #6C5CE7, transparent 70%)" }}
+      />
+      <div
+        className="pointer-events-none absolute -bottom-48 -right-24 h-[32rem] w-[32rem] rounded-full opacity-30 blur-[120px] dark:opacity-25"
+        style={{ background: "radial-gradient(circle, #FF5D73, transparent 70%)" }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+        }}
+      />
 
       {/* Header controls */}
       <div className="relative z-10 mb-6 flex w-full max-w-md items-center justify-between">
